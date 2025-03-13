@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Vector = MathNet.Numerics.LinearAlgebra.Vector<double>;
 namespace C2M2.NeuronalDynamics.Simulation
 {
-
     public class GatingVariable
     {
         // Name of the gating variable (i.e: n, m, h)
