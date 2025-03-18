@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System;
 using SysMath = System.Math;
 using UnityEngine;
@@ -685,29 +686,56 @@ namespace C2M2.NeuronalDynamics.Simulation
             };
 
             // Initialize ion channels and gating variables
-            IonChannel potassiumChannel = new IonChannel("Potassium Channel", gk, ek);
-            potassiumChannel.AddGatingVariable(new GatingVariable("n", alpha_n, beta_n, nx, ni, Neuron.nodes.Count));
+            // IonChannel potassiumChannel = new IonChannel("Potassium Channel", gk, ek);
+            // potassiumChannel.AddGatingVariable(new GatingVariable("n", alpha_n, beta_n, nx, ni, Neuron.nodes.Count));
 
-            IonChannel sodiumChannel = new IonChannel("Sodium Channel", gna, ena);
-            sodiumChannel.AddGatingVariable(new GatingVariable("m", alpha_m, beta_m, mx, mi, Neuron.nodes.Count));
-            sodiumChannel.AddGatingVariable(new GatingVariable("h", alpha_h, beta_h, hx, hi, Neuron.nodes.Count));
+            // IonChannel sodiumChannel = new IonChannel("Sodium Channel", gna, ena);
+            // sodiumChannel.AddGatingVariable(new GatingVariable("m", alpha_m, beta_m, mx, mi, Neuron.nodes.Count));
+            // sodiumChannel.AddGatingVariable(new GatingVariable("h", alpha_h, beta_h, hx, hi, Neuron.nodes.Count));
 
             
-            IonChannel calciumChannel = new IonChannel("Calcium Channel", gca, eca);
-            calciumChannel.AddGatingVariable(new GatingVariable("q", alpha_q, beta_q, qx, qi, Neuron.nodes.Count));
-            calciumChannel.AddGatingVariable(new GatingVariable("r", alpha_r, beta_r, rx, ri, Neuron.nodes.Count));
+            // IonChannel calciumChannel = new IonChannel("Calcium Channel", gca, eca);
+            // calciumChannel.AddGatingVariable(new GatingVariable("q", alpha_q, beta_q, qx, qi, Neuron.nodes.Count));
+            // calciumChannel.AddGatingVariable(new GatingVariable("r", alpha_r, beta_r, rx, ri, Neuron.nodes.Count));
             
-            IonChannel chlorideChannel = new IonChannel("Chloride Channel", gcl, ecl);
-            chlorideChannel.AddGatingVariable(new GatingVariable("x", alpha_cl, beta_cl, 1, 0.5, Neuron.nodes.Count));
+            // IonChannel chlorideChannel = new IonChannel("Chloride Channel", gcl, ecl);
+            // chlorideChannel.AddGatingVariable(new GatingVariable("x", alpha_cl, beta_cl, 1, 0.5, Neuron.nodes.Count));
 
 
-            IonChannel leakageChannel = new IonChannel("Leakage Channel", gl, el);
+            // IonChannel leakageChannel = new IonChannel("Leakage Channel", gl, el);
+
+            // The following lines are adding all channels from PremadeChannels.cs
+
+            List<string> wantedChannels = new List<string>
+            {
+                "Potassium Channel",
+                // "Sodium Channel",
+                "Calcium Channel",
+                "Leakage Channel"
+            };
 
 
-            AddIonChannel(potassiumChannel);
-            AddIonChannel(sodiumChannel);
+            MethodInfo[] channelMethods = typeof(PremadeChannels).GetMethods(BindingFlags.Public | BindingFlags.Static);
+
+            foreach (MethodInfo method in channelMethods)
+            {
+                if (method.ReturnType == typeof(IonChannel))
+                {
+                    IonChannel channel = (IonChannel)method.Invoke(null, new object[] { Neuron.nodes.Count });
+                    ionChannels.Add(channel);
+                    // AddIonChannel(channel);
+                    if (wantedChannels.Contains(channel.Name))
+                        {
+                            AddIonChannel(channel);
+                        }
+                }
+            }
+
+
+            // AddIonChannel(potassiumChannel);
+            // AddIonChannel(sodiumChannel);
             // AddIonChannel(chlorideChannel);
-            AddIonChannel(calciumChannel);
+            // AddIonChannel(calciumChannel);
             // AddIonChannel(leakageChannel);
         }
 
@@ -741,7 +769,7 @@ namespace C2M2.NeuronalDynamics.Simulation
             H = Vector.Build.Dense(Neuron.nodes.Count, hi);
             Mpre = M.Clone(); Npre = N.Clone(); Hpre = H.Clone();
 
-            foreach (var channel in ionChannels)
+            foreach (var channel in activeIonChannels)
             {
                 foreach (var gatingVariable in channel.GatingVariables)
                 {
@@ -1019,7 +1047,7 @@ namespace C2M2.NeuronalDynamics.Simulation
 
         public void AddIonChannel(IonChannel channel)
         {
-            ionChannels.Add(channel);
+            // ionChannels.Add(channel);
 
             if (channel.IsActive)
             {
