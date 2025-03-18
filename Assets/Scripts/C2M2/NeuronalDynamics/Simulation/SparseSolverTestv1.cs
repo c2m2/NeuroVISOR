@@ -499,12 +499,6 @@ namespace C2M2.NeuronalDynamics.Simulation
             Upre = U_Active.Clone();
             U_Active.SetSubVector(0, Neuron.nodes.Count, Vector.Build.DenseOfArray(b));
                        
-            // Equilibrium check: compare U_Active with Upre (from the previous iteration)
-            double tolerance = 1e-6; // in volts
-            if ((U_Active - Upre).L2Norm() < tolerance)
-            {
-                Debug.Log("Equilibrium reached: V ~ " + (U_Active[0] * 1000) + " mV");
-            }
         }
 
         internal override void SetOutputValues()
@@ -709,8 +703,8 @@ namespace C2M2.NeuronalDynamics.Simulation
             List<string> wantedChannels = new List<string>
             {
                 "Potassium Channel",
-                // "Sodium Channel",
-                "Calcium Channel",
+                "Sodium Channel",
+                // "Calcium Channel",
                 "Leakage Channel"
             };
 
